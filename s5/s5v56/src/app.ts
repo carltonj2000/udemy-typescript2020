@@ -1,44 +1,101 @@
 console.log("your code goes here ...");
 
-const add = (a: number, b: number = 33) => a + b;
+abstract class Department {
+  protected employees: string[] = [];
+  static fiscalYear = 2020;
 
-const pO: (a: number | string) => void = output => console.log(output);
+  constructor(protected readonly id: string, public name: string) {
+    //
+  }
 
-pO(add(5, 2));
-pO(add(5));
+  static createEmployee(name: string) {
+    return { name };
+  }
+  abstract describe(this: Department): void;
 
-const button = document.querySelector("button");
+  addEmployee(employee: string) {
+    this.employees.push(employee);
+  }
 
-button?.addEventListener("click", event => console.log(event));
+  printEmployees() {
+    console.log(this.employees);
+  }
+}
 
-const hobbies = ["Sports", "Cooking"];
+class ITDepartment extends Department {
+  admins: string[];
+  constructor(id: string, name: string, admins: string[]) {
+    super(id, name);
+    this.admins = admins;
+  }
 
-const activeHobbies = ["Hiking", ...hobbies];
+  describe() {
+    console.log(`${this.name} Department. Id ${this.id}`);
+  }
+}
 
-console.log(activeHobbies);
+class AccountingDepartment extends Department {
+  private lastReport: string = "";
+  private static instance: AccountingDepartment;
 
-const person = { name: "Carlton", age: 54 };
+  private constructor(id: string, name: string, public reports: string[]) {
+    super(id, name);
+  }
 
-const copiedPerson = { ...person };
+  static getInstance(id: string, name: string, reports: [string]) {
+    if (this.instance) return this.instance;
+    this.instance = new AccountingDepartment(id, name, reports);
+    return this.instance;
+  }
+  addEmployee(employee: string) {
+    this.employees.push(employee);
+  }
+  addReport(text: string) {
+    this.reports.push(text);
+    this.lastReport = text;
+  }
+  get mostRecentReport() {
+    if (this.lastReport) return this.lastReport;
+    else throw new Error("No report found");
+  }
+  set mostRecentReport(value: string) {
+    if (!value) throw new Error("No report set");
+    this.addReport(value);
+    this.lastReport = value;
+  }
+  describe() {
+    console.log(`${this.name} Department. Id ${this.id}`);
+  }
+}
 
-console.log(copiedPerson);
+/* // works only if Department is not abstract 
+const accounting = new Department("id1", "Accounting");
+accounting.addEmployee("cj");
+accounting.addEmployee("jj");
+accounting.describe();
+*/
+/* // valid before employees was added
+const accountingCopy = { describe: accounting.describe, name: "copy" };
+accountingCopy.describe();
+*/
 
-const { name: string, ...rest } = person;
+const itDepartment = new ITDepartment("id2", "It", ["carlton"]);
+itDepartment.addEmployee("it cj");
+itDepartment.addEmployee("it jj");
+console.log(itDepartment);
 
-console.log(rest);
+const accountingDepartment = AccountingDepartment.getInstance("id2", "It", [
+  "report"
+]);
+accountingDepartment.addEmployee("acc cj");
+accountingDepartment.addEmployee("acc jj");
+console.log(accountingDepartment);
+accountingDepartment.addReport("report 2");
+console.log(accountingDepartment.mostRecentReport);
+accountingDepartment.mostRecentReport = "report 3";
+console.log(accountingDepartment.mostRecentReport);
+const ad = AccountingDepartment.getInstance("id2+", "It+", ["r"]);
+console.log(accountingDepartment, ad);
 
-const add2 = (...rest: number[]) => {
-  return rest.reduce((a, v) => a + v, 0);
-};
-
-const addedNumbers = add2(4, 10, 3, 2.7);
-
-console.log(addedNumbers);
-
-const add3 = (...rest: [number, number, number]) => {
-  return rest.reduce((a, v) => a + v, 0);
-};
-
-const addedNumbers3 = add3(4, 10, 3);
-
-console.log(addedNumbers3);
+const e1 = Department.createEmployee("cj");
+console.log(e1);
